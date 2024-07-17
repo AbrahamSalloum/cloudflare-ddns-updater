@@ -1,5 +1,7 @@
 # cloudflare-ddns-updater
-Quick bash script to update cloudflare's dynamic dns
+Bash script to update cloudflare dns with a dynamic IP. Works with multiple zones. 
 
-will update IP if change is detected (run it periodically in crontab). --force and --log available. 
+Will update IP if a change is detected. --force and --log are options. 
+A timer and service file  is included (you will need to modify the path in the service file to point to the script and optionally the timer length of 20 minutes) for systemd-timer. Or you can just run it with crontab.  
+
 --log logs to ~/log-cfddns
