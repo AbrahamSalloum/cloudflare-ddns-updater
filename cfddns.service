@@ -1,0 +1,6 @@
+[Unit]
+Description="Cloudflare DDNS updater"
+
+[Service]
+#edit me 
+ExecStart=/path/to/cfddns.sh
