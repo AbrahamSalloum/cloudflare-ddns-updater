@@ -1,0 +1,13 @@
+[Unit]
+Description=Run Cloudflare ddns
+Requires=cfddns.service
+Wants=network-online.target
+After=network-online.target
+
+[Timer]
+#this will run ever 20mins, change if required. 
+OnCalendar=*-*-* *:*/20:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
