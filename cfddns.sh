@@ -1,11 +1,10 @@
 #!/bin/bash
 
 # cf email 
-email="example@mail.com"
-#global cf apikey
-key="bfFAKE01FAKE02FAKE03" 
-zone="example.com"
-records=("a.example.com" "b.examle.com")
+email="mail@account.com"
+
+# semi-colon (;) delimted values of subdomain;zone;key 
+records=("sub.domain.com;domain.com;bf1e5FAKEFKEKAKE4234324d5" "sub.example.com;example.com;cdfsfsdfs5FAKEFKEKAKE4234324d5")
 #
 
 for record in "${records[@]}"
@@ -22,13 +21,19 @@ for opt in "$@"; do
 	esac
 done 
 
-ipaddr=$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')
-cfarec=$(dig $record +short)
+
+domain=$(echo $record | cut -d ";" -f 1)
+zone=$(echo $record | cut -d ";" -f 2)
+key=$(echo $record | cut -d ";" -f 3)
+
+ipaddr=$(dig @1.1.1.1 ch txt whoami.Cloudflare +short | awk -F'"' '{ print $2}')
+cfarec=$(dig @1.1.1.1 $domain +short)
+
 
 
 if [ "$force" != 1 ]; then
 	if [ "$ipaddr" == "$cfarec" ]; then 
-		echo "IP $ipaddr unchanged"
+		echo "IP $ipaddr for $domain unchanged"
 		updateid=0
 	else
 		updateip=1
@@ -46,7 +51,7 @@ if [ "$updateip" == 1 ]; then
 	
 	zid=$(echo $zidreq | grep -Po '(?<="id":")[^"]*' | head -1)
 	
-	ridreq=$(curl -sSX GET "https://api.cloudflare.com/client/v4/zones/$zid/dns_records?name=$record" \
+	ridreq=$(curl -sSX GET "https://api.cloudflare.com/client/v4/zones/$zid/dns_records?name=$domain" \
 		-H "X-Auth-Email: $email" \
 		-H "X-Auth-Key: $key" \
 		-H "Content-Type: application/json") 
@@ -56,12 +61,11 @@ if [ "$updateip" == 1 ]; then
      	-H "X-Auth-Email: $email" \
      	-H "X-Auth-Key: $key" \
      	-H "Content-Type: application/json" \
-     	--data '{"type":"A","name":"'${record}'","content":"'${ipaddr}'","ttl":120,"proxied":false}')
-	echo $update
+     	--data '{"type":"A","name":"'${domain}'","content":"'${ipaddr}'","ttl":120,"proxied":false}')
 fi
 
 if [ "$log" == 1 ]; then
-	printf "Current IP for $record is: $cfarec\n" | tee -a ~/log-cfddns
+	printf "Current IP for $domain is: $cfarec\n" | tee -a ~/log-cfddns
 	printf "Current public IP is: $ipaddr\n\n" | tee -a ~/log-cfddns
 	if [ "$updateip" == 1 ]; then 
 		printf "$zidreq\n\n" >> ~/log-cfddns
@@ -73,6 +77,7 @@ if [ "$log" == 1 ]; then
 	printf "\n\nSee file: ~/log-cfddns for details\n\n" 
 	exit 0
 fi
+
+printf "$update \n"
 done
-printf "$update"
 exit 0
